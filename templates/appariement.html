@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vectoriel Model</title>
+    <link rel="stylesheet" href="../static/appariement.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link href="../static/fontawesome-free-6.1.1-web/css/all.css" rel="stylesheet">
+</head>
+
+<body>
+    <p>Vectoriel Model</p>
+    <nav class="navbar">
+        <ul class="navbar-menu">
+            <li class="navbar-item logo">
+                <a href="#" class="navbar-link">
+                    <i class="fas fa-chevron-right navbar-icon"></i>
+                </a>
+            </li>
+            <li class="navbar-item">
+                <a href="/" class="navbar-link">
+                    <i class="fa-solid fa-house fa-2xl navbar-icon" style="color: #0c0d0d;"></i>
+                    <span class="navbar-title">Home </span>
+                </a>
+            </li>
+            <li class="navbar-item">
+                <a href="/indexation" class="navbar-link">
+                    <i class="fa-solid fa-i fa-2xl navbar-icon" style="color: #0c0d0d;"></i>
+                    <span class="navbar-title">Indexation </span>
+                </a>
+            </li>
+            <li class="navbar-item preprocessing">
+                <a href="/appariement" class="navbar-link">
+                    <i class="fa-solid fa-v fa-2xl navbar-icon" style="color: #19191a;"></i>
+                    <span class="navbar-title"> Vectoriel Model </span>
+                </a>
+            </li>
+            <li class="navbar-item">
+                <a href="/kb_model" class="navbar-link">
+                    <i class="fa-solid fa-m fa-2xl navbar-icon" style="color: #0c0d0d;"></i>
+                    <span class="navbar-title">BM25 Model</span>
+                </a>
+            </li>
+            <li class="navbar-item">
+                <a href="/boolean" class="navbar-link">
+                    <i class="fa-solid fa-b fa-2xl navbar-icon" style="color: #121212;"></i>
+                    <span class="navbar-title">Boolean Model</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <form action="/appariement" id="form" method="POST" enctype="multipart/form-data">
+
+        <div id="query_zone">
+            <label id="query2" for="query">Query:</label>
+            <textarea id="area2" name="area2" rows="3" cols="70"></textarea>
+            <button id="sub_but2" onclick="submitForm()">Recherche</button>
+            <button type="button" id="refresh_btn2" onclick="refreshForm()">Refresh</button>
+        </div>
+        <br>
+
+        <label for="processing" id="lab_off">Processing:</label>
+        <div id="processing">
+            <label><input type="radio" name="processingType2" value="Token">Token</label>
+            <label><input type="radio" name="processingType2" value="Split">Split</label>
+        </div>
+        <br>
+
+        <label for="stemming" id="lab_off">Stemming:</label>
+        <div id="stemming">
+            <label><input type="radio" name="stemmingType2" value="Porter">Porter</label>
+            <label><input type="radio" name="stemmingType2" value="Lancaster">Lancaster</label>
+        </div>
+        <br>
+
+        <label for="index" id="lab_off">Index:</label>
+        <div id="index">
+            <label><input type="radio" name="indexType2" value="Inverse">Inverse</label>
+            <label><input type="radio" name="indexType2" value="Descripteur">Descripteur</label>
+        </div>
+        <br>
+
+        <label for="matching" id="lab_off">Matching:</label>
+        <div id="matching">
+            <label><input type="radio" name="matchingType" value="Produit Scalaire">Produit Scalaire</label>
+            <label><input type="radio" name="matchingType" value="Similarité Cosinus">Similarité Cosinus</label>
+            <label><input type="radio" name="matchingType" value="Indice de Jaccard">Indice de Jaccard</label>
+        </div>
+        <br>
+
+        {% if result_content %}
+        <h2>Résultats:</h2>
+        <table border="1">
+            <tr>
+                <th>Num Doc</th>
+                <th>Relevance</th>
+            </tr>
+            {% for doc_id, relevance in result_content %}
+                <tr>
+                    <td>{{ doc_id }}</td>
+                    <td>{{ relevance }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+    </form>
+
+    <script>
+        // Function to store form data in local storage
+        function storeFormData() {
+            localStorage.setItem('area2', document.getElementById('area2').value);
+
+            var processingType = document.querySelector('input[name="processingType2"]:checked');
+            if (processingType) {
+                localStorage.setItem('processingType2', processingType.value);
+            }
+            var matchingType = document.querySelector('input[name="matchingType"]:checked');
+            if (matchingType) {
+                localStorage.setItem('matchingType', matchingType.value);
+            }
+
+            var stemmingType = document.querySelector('input[name="stemmingType2"]:checked');
+            if (stemmingType) {
+                localStorage.setItem('stemmingType2', stemmingType.value);
+            }
+
+            var indexType = document.querySelector('input[name="indexType2"]:checked');
+            if (indexType) {
+                localStorage.setItem('indexType2', indexType.value);
+            }
+        }
+
+        // Function to retrieve form data from local storage and set in form elements
+        function retrieveFormData() {
+            document.getElementById('area2').value = localStorage.getItem('area2') || '';
+
+            var processingType = localStorage.getItem('processingType2');
+            if (processingType) {
+                document.querySelector('input[name="processingType2"][value="' + processingType + '"]').checked = true;
+            }
+            var matchingType = localStorage.getItem('matchingType');
+            if (matchingType) {
+                document.querySelector('input[name="matchingType"][value="' + matchingType + '"]').checked = true;
+            }
+
+            var stemmingType = localStorage.getItem('stemmingType2');
+            if (stemmingType) {
+                document.querySelector('input[name="stemmingType2"][value="' + stemmingType + '"]').checked = true;
+            }
+
+            var indexType = localStorage.getItem('indexType2');
+            if (indexType) {
+                document.querySelector('input[name="indexType2"][value="' + indexType + '"]').checked = true;
+            }
+        }
+
+        // Function to be called when the form is submitted
+        function submitForm() {
+            storeFormData();
+            // Add any additional logic for form submission
+            // ...
+        }
+
+        // On page load, retrieve form data and set in form elements
+        window.onload = function () {
+            retrieveFormData();
+        };
+
+        function refreshForm() {
+            // Réinitialiser les champs du formulaire
+            document.getElementById('area2').value = '';
+
+            // Décocher les cases radio du type de traitement
+            var processingTypeRadios = document.querySelectorAll('input[name="processingType2"]');
+            processingTypeRadios.forEach(function (radio) {
+                radio.checked = false;
+            });
+
+            // Décocher les cases radio de la racine
+            var stemmingTypeRadios = document.querySelectorAll('input[name="stemmingType2"]');
+            stemmingTypeRadios.forEach(function (radio) {
+                radio.checked = false;
+            });
+
+            // Décocher les cases radio du type d'index
+            var indexTypeRadios = document.querySelectorAll('input[name="indexType2"]');
+            indexTypeRadios.forEach(function (radio) {
+                radio.checked = false;
+            });
+
+            // Décocher les cases radio du type de correspondance
+            var matchingTypeRadios = document.querySelectorAll('input[name="matchingType"]');
+            matchingTypeRadios.forEach(function (radio) {
+                radio.checked = false;
+            });
+
+            // Supprimer les données stockées dans le local storage
+            localStorage.removeItem('area2');
+            localStorage.removeItem('processingType2');
+            localStorage.removeItem('stemmingType2');
+            localStorage.removeItem('indexType2');
+            localStorage.removeItem('matchingType');
+
+            // Cacher les éléments que vous ne souhaitez pas afficher pendant le refresh
+            var labOffElement = document.getElementById('lab_off');
+            if (labOffElement) {
+                labOffElement.style.display = 'none';
+            }
+
+            // Cacher l'élément h2 contenant "Résultats:"
+            var h2Element = document.querySelector('h2');
+            if (h2Element) {
+                h2Element.style.display = 'none';
+            }
+
+            // Vous pouvez également effacer le contenu du tableau des résultats si présent
+            var table = document.querySelector('table');
+            if (table) {
+                table.parentNode.removeChild(table);
+            }
+        }
+    </script>
+
+</body>
+
+</html>

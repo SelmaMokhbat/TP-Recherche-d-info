@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indexation</title>
+    <link rel="stylesheet" href="../static/indexation.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link href="../static/fontawesome-free-6.1.1-web/css/all.css" rel="stylesheet">
+</head>
+
+<body>
+    <p>Indexation</p>
+    <nav class="navbar">
+        <ul class="navbar-menu">
+            <li class="navbar-item logo">
+                <a href="#" class="navbar-link">
+                    <i class="fas fa-chevron-right navbar-icon"></i>
+                </a>
+            </li>
+            <li class="navbar-item">
+                <a href="/" class="navbar-link">
+                    <i class="fa-solid fa-house fa-2xl navbar-icon" style="color: #0c0d0d;"></i>
+                    <span class="navbar-title">Home </span>
+                </a>
+            </li>
+            <li class="navbar-item">
+                <a href="/indexation" class="navbar-link">
+                    <i class="fa-solid fa-i fa-2xl navbar-icon" style="color: #0c0d0d;"></i>
+                    <span class="navbar-title">Indexation </span>
+                </a>
+            </li>
+            <li class="navbar-item preprocessing">
+                <a href="/appariement" class="navbar-link">
+                    <i class="fa-solid fa-v fa-2xl navbar-icon" style="color: #19191a;"></i>
+                    <span class="navbar-title"> Vectoriel Model </span>
+                </a>
+            </li>
+            <li class="navbar-item">
+                <a href="/kb_model" class="navbar-link">
+                    <i class="fa-solid fa-m fa-2xl navbar-icon" style="color: #0c0d0d;"></i>
+                    <span class="navbar-title">BM25 Model</span>
+                </a>
+            </li>
+            <li class="navbar-item">
+                <a href="/boolean" class="navbar-link">
+                    <i class="fa-solid fa-b fa-2xl navbar-icon" style="color: #121212;"></i>
+                    <span class="navbar-title">Boolean Model</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <form action="/indexation" id="form" method="POST" enctype="multipart/form-data">
+
+        <div id="query_zone">
+            <label id="query" for="query">Query:</label>
+            <textarea id="area" name="area" rows="3" cols="70"></textarea>
+            <button id="sub_but" onclick="submitForm()">Recherche</button>
+            <button type="button" id="refresh_btn" onclick="refreshForm()">Refresh</button>
+        </div>
+        <br>
+
+        <label for="processing" id="lab_off">Processing:</label>
+        <div id="processing">
+            <label><input type="radio" name="processingType" value="Token">Token</label>
+            <label><input type="radio" name="processingType" value="Split">Split</label>
+            
+        </div>
+        <br>
+
+        <label for="stemming" id="lab_off">Stemming:</label>
+        <div id="stemming">
+            <label><input type="radio" name="stemmingType" value="Porter">Porter</label>
+            <label><input type="radio" name="stemmingType" value="Lancaster">Lancaster</label>
+        </div>
+        <br>
+
+        <label for="index" id="lab_off">Index:</label>
+        <div id="index">
+            <label><input type="radio" name="indexType" value="Inverse">Inverse</label>
+            <label><input type="radio" name="indexType" value="Descripteur">Descripteur</label>
+        </div>
+        <br>
+
+        {% if result_content %}
+        <h2>Résultats:</h2>
+        <table border="1">
+            <tr>
+                {% if index_type == 'Inverse' %}
+                <th>Term</th>
+                <th>Num Doc</th>
+                <th>Freq</th>
+                <th>Weight</th>
+                {% endif %}
+                {% if index_type == 'Descripteur' %}
+                <th>Num Doc</th>
+                <th>Term</th>
+                <th>Freq</th>
+                <th>Weight</th>
+                {% endif %}
+            </tr>
+            {% for line in result_content %}
+            {% set data = line.strip().split() %}
+            <tr>
+                <td>{{ data[0] }}</td>
+                <td>{{ data[1] }}</td>
+                <td>{{ data[2] }}</td>
+                <td>{{ data[3] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+    </form>
+
+    <script>
+        // Function to store form data in local storage
+        function storeFormData() {
+            localStorage.setItem('area', document.getElementById('area').value);
+
+            var processingType = document.querySelector('input[name="processingType"]:checked');
+            if (processingType) {
+                localStorage.setItem('processingType', processingType.value);
+            }
+
+            var stemmingType = document.querySelector('input[name="stemmingType"]:checked');
+            if (stemmingType) {
+                localStorage.setItem('stemmingType', stemmingType.value);
+            }
+
+            var indexType = document.querySelector('input[name="indexType"]:checked');
+            if (indexType) {
+                localStorage.setItem('indexType', indexType.value);
+            }
+        }
+
+        // Function to retrieve form data from local storage and set in form elements
+        function retrieveFormData() {
+            document.getElementById('area').value = localStorage.getItem('area') || '';
+
+            var processingType = localStorage.getItem('processingType');
+            if (processingType) {
+                document.querySelector('input[name="processingType"][value="' + processingType + '"]').checked = true;
+            }
+
+            var stemmingType = localStorage.getItem('stemmingType');
+            if (stemmingType) {
+                document.querySelector('input[name="stemmingType"][value="' + stemmingType + '"]').checked = true;
+            }
+
+            var indexType = localStorage.getItem('indexType');
+            if (indexType) {
+                document.querySelector('input[name="indexType"][value="' + indexType + '"]').checked = true;
+            }
+        }
+
+        // Function to be called when the form is submitted
+        function submitForm() {
+            storeFormData();
+            // Add any additional logic for form submission
+            // ...
+        }
+
+        // On page load, retrieve form data and set in form elements
+        window.onload = function () {
+            retrieveFormData();
+        };
+        function refreshForm() {
+        // Réinitialiser les champs du formulaire
+        document.getElementById('area').value = '';
+        document.querySelector('input[name="processingType"]:checked').checked = false;
+        document.querySelector('input[name="stemmingType"]:checked').checked = false;
+        document.querySelector('input[name="indexType"]:checked').checked = false;
+
+        // Supprimer les données stockées dans le local storage
+        localStorage.removeItem('area');
+        localStorage.removeItem('processingType');
+        localStorage.removeItem('stemmingType');
+        localStorage.removeItem('indexType');
+
+        // Cacher les éléments que vous ne souhaitez pas afficher pendant le refresh
+        document.getElementById('lab_off').style.display = 'none';
+        
+        // Cacher l'élément h2 contenant "Résultats:"
+        document.querySelector('h2').style.display = 'none';
+
+        // Vous pouvez également effacer le contenu du tableau des résultats si présent
+        var table = document.querySelector('table');
+        if (table) {
+            table.parentNode.removeChild(table);
+        }
+    }
+
+    </script>
+    
+</body>
+
+</html>
